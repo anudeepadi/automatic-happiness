@@ -1,0 +1,10 @@
+# Data files
+data/
+*.csv
+*.parquet
+*.geojson
+*.xlsx
+*.pdf
+output/
+__pycache__/
+.ipynb_checkpoints/
