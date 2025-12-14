@@ -8,3 +8,25 @@ data/
 output/
 __pycache__/
 .ipynb_checkpoints/
+
+# Models (large files)
+models/*.json
+
+# Node modules
+node_modules/
+dashboard/node_modules/
+dashboard/.next/
+
+# OS files
+.DS_Store
+*.log
+
+# Environment
+.env
+.venv/
+venv/
+
+# Cache
+*.pyc
+.cache/
+austin_weather_cache.csv

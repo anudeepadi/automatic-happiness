@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port-to-Rail Surge Forecaster | Command Center</title>
+
+    <!-- Fonts: Industrial + Technical -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #0a0c10;
+            --bg-panel: #0d1117;
+            --bg-card: #161b22;
+            --bg-elevated: #1c2128;
+            --amber: #ffaa00;
+            --amber-glow: rgba(255, 170, 0, 0.4);
+            --amber-dim: #8b5a00;
+            --cyan: #00e5ff;
+            --cyan-glow: rgba(0, 229, 255, 0.3);
+            --cyan-dim: #006b7a;
+            --red-alert: #ff3d3d;
+            --red-glow: rgba(255, 61, 61, 0.4);
+            --green-safe: #00ff88;
+            --green-glow: rgba(0, 255, 136, 0.3);
+            --purple: #a855f7;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --grid-line: rgba(48, 54, 61, 0.6);
+            --font-display: 'Orbitron', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-ui: 'Rajdhani', sans-serif;
+            --gap-xs: 4px;
+            --gap-sm: 8px;
+            --gap-md: 16px;
+            --gap-lg: 24px;
+            --gap-xl: 32px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 14px; }
+
+        body {
+            font-family: var(--font-ui);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 229, 255, 0.015) 2px,
+                rgba(0, 229, 255, 0.015) 4px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, var(--bg-panel) 0%, transparent 100%);
+            border-bottom: 1px solid var(--grid-line);
+            padding: var(--gap-md) var(--gap-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-md);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .logo-text h1 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            text-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        .logo-text p {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-lg);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-sm);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green-safe);
+            box-shadow: 0 0 10px var(--green-glow);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .timestamp {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--amber);
+            text-shadow: 0 0 10px var(--amber-glow);
+        }
+
+        /* Main Layout */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: var(--gap-lg);
+            padding: var(--gap-lg) var(--gap-xl);
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--gap-md);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--grid-line);
+            padding: var(--gap-md);
+            position: relative;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        }
+
+        .stat-card.amber::before { background: linear-gradient(90deg, transparent, var(--amber), transparent); }
+        .stat-card.red::before { background: linear-gradient(90deg, transparent, var(--red-alert), transparent); }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--cyan);
+            text-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .stat-card.amber .stat-value { color: var(--amber); text-shadow: 0 0 15px var(--amber-glow); }
+        .stat-card.red .stat-value { color: var(--red-alert); text-shadow: 0 0 15px var(--red-glow); }
+
+        .stat-unit {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Panel base */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--grid-line);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: var(--gap-md);
+            border-bottom: 1px solid var(--grid-line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-elevated);
+        }
+
+        .panel-title {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: var(--gap-sm);
+        }
+
+        .panel-title::before {
+            content: '▸';
+            color: var(--cyan);
+        }
+
+        .panel-badge {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+        }
+
+        .panel-content {
+            padding: var(--gap-md);
+            flex: 1;
+            overflow: auto;
+        }
+
+        /* Map Panel */
+        .map-panel { grid-row: span 2; }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            background: var(--bg-panel);
+            border: 1px solid var(--grid-line);
+            overflow: hidden;
+        }
+
+        /* Radar sweep effect */
+        .map-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            transform: translate(-50%, -50%);
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(0, 229, 255, 0.1) 30deg,
+                transparent 60deg
+            );
+            animation: radar-sweep 8s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes radar-sweep {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .us-map-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: var(--gap-md);
+            left: var(--gap-md);
+            display: flex;
+            gap: var(--gap-md);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            background: rgba(13, 17, 23, 0.95);
+            padding: var(--gap-sm) var(--gap-md);
+            border: 1px solid var(--grid-line);
+            z-index: 10;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.low { background: var(--green-safe); box-shadow: 0 0 6px var(--green-glow); }
+        .legend-dot.medium { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow); }
+        .legend-dot.high { background: var(--red-alert); box-shadow: 0 0 6px var(--red-glow); }
+
+        /* Port markers in SVG */
+        .port-marker-svg {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .port-marker-svg:hover {
+            transform: scale(1.5);
+        }
+
+        .port-marker-svg.low { fill: var(--green-safe); }
+        .port-marker-svg.medium { fill: var(--amber); }
+        .port-marker-svg.high { fill: var(--red-alert); }
+
+        .port-glow {
+            animation: port-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes port-pulse {
+            0%, 100% { opacity: 0.6; r: 12; }
+            50% { opacity: 0.2; r: 20; }
+        }
+
+        .port-label {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            fill: var(--text-primary);
+            pointer-events: none;
+        }
+
+        /* Alerts Panel */
+        .alerts-panel { max-height: 320px; }
+
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-sm);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-md);
+            padding: var(--gap-sm) var(--gap-md);
+            background: var(--bg-panel);
+            border-left: 3px solid var(--red-alert);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .alert-item.medium { border-left-color: var(--amber); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+        }
+
+        .alert-icon { font-size: 1.2rem; }
+
+        .alert-content { flex: 1; }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .alert-detail {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .alert-prob {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--red-alert);
+            text-shadow: 0 0 10px var(--red-glow);
+        }
+
+        .alert-item.medium .alert-prob { color: var(--amber); text-shadow: 0 0 10px var(--amber-glow); }
+
+        /* Dispatch windows */
+        .dispatch-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-sm);
+        }
+
+        .dispatch-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: var(--gap-md);
+            align-items: center;
+            padding: var(--gap-sm) var(--gap-md);
+            background: var(--bg-panel);
+            border: 1px solid var(--grid-line);
+            transition: all 0.2s ease;
+        }
+
+        .dispatch-item:hover {
+            border-color: var(--cyan);
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .dispatch-port-name { font-weight: 600; font-size: 0.9rem; }
+        .dispatch-port-state { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); }
+
+        .dispatch-time {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--cyan);
+            padding: 4px 8px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--cyan-dim);
+        }
+
+        .dispatch-trucks-value {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--amber);
+        }
+
+        .dispatch-trucks-label {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .risk-badge {
+            padding: 4px 10px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .risk-badge.low { background: rgba(0, 255, 136, 0.1); border: 1px solid var(--green-safe); color: var(--green-safe); }
+        .risk-badge.medium { background: rgba(255, 170, 0, 0.1); border: 1px solid var(--amber); color: var(--amber); }
+        .risk-badge.high { background: rgba(255, 61, 61, 0.1); border: 1px solid var(--red-alert); color: var(--red-alert); animation: flash 1s ease-in-out infinite; }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Utilization */
+        .utilization-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-md);
+        }
+
+        .utilization-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .utilization-port { font-weight: 600; font-size: 0.85rem; }
+        .utilization-value { font-family: var(--font-mono); font-size: 0.8rem; }
+
+        .utilization-bar {
+            height: 6px;
+            background: var(--bg-panel);
+            border: 1px solid var(--grid-line);
+            margin-top: 4px;
+        }
+
+        .utilization-fill { height: 100%; transition: width 1s ease-out; }
+        .utilization-fill.low { background: linear-gradient(90deg, var(--green-safe), var(--cyan)); }
+        .utilization-fill.normal { background: linear-gradient(90deg, var(--cyan), var(--amber)); }
+        .utilization-fill.high { background: linear-gradient(90deg, var(--amber), var(--red-alert)); }
+        .utilization-fill.critical { background: var(--red-alert); animation: pulse-bar 1s infinite; }
+
+        @keyframes pulse-bar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Feature chart */
+        .feature-item {
+            display: grid;
+            grid-template-columns: 130px 1fr 50px;
+            gap: var(--gap-md);
+            align-items: center;
+            margin-bottom: var(--gap-sm);
+        }
+
+        .feature-name {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .feature-bar-container {
+            height: 8px;
+            background: var(--bg-panel);
+            border: 1px solid var(--grid-line);
+        }
+
+        .feature-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+            box-shadow: 0 0 8px var(--cyan-glow);
+            transition: width 0.8s ease-out;
+        }
+
+        .feature-value {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--cyan);
+            text-align: right;
+        }
+
+        /* Repositioning */
+        .reposition-item {
+            padding: var(--gap-md);
+            background: var(--bg-panel);
+            border: 1px solid var(--grid-line);
+            margin-bottom: var(--gap-sm);
+            position: relative;
+            padding-left: calc(var(--gap-md) + 4px);
+        }
+
+        .reposition-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .reposition-item.high::before { background: var(--red-alert); }
+        .reposition-item.medium::before { background: var(--amber); }
+        .reposition-item.low::before { background: var(--cyan); }
+
+        .reposition-route {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-sm);
+            margin-bottom: var(--gap-sm);
+        }
+
+        .reposition-terminal {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            background: var(--bg-card);
+        }
+
+        .reposition-arrow { color: var(--cyan); font-size: 1.2rem; }
+
+        .reposition-details {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .reposition-trucks {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .reposition-distance {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--gap-md);
+            padding: var(--gap-xl);
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--grid-line);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-panel); }
+        ::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(3, 1fr); }
+            .map-panel { grid-row: auto; }
+        }
+
+        @media (max-width: 600px) {
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🚢</div>
+            <div class="logo-text">
+                <h1>Port-Rail Surge</h1>
+                <p>Command Center v1.0</p>
+            </div>
+        </div>
+        <div class="header-status">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>SYSTEMS ONLINE</span>
+            </div>
+            <div class="timestamp" id="timestamp">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Active Ports</div>
+                <div class="stat-value" id="stat-ports">105</div>
+                <div class="stat-unit">US terminals</div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-label">Daily Trucks</div>
+                <div class="stat-value" id="stat-trucks">57,327</div>
+                <div class="stat-unit">projected</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-label">High Risk</div>
+                <div class="stat-value" id="stat-risk">3</div>
+                <div class="stat-unit">surge alerts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Drayage</div>
+                <div class="stat-value" id="stat-drayage">2.8</div>
+                <div class="stat-unit">km to rail</div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-label">Reposition</div>
+                <div class="stat-value" id="stat-reposition">150</div>
+                <div class="stat-unit">trucks needed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Utilization</div>
+                <div class="stat-value" id="stat-utilization">68.5</div>
+                <div class="stat-unit">avg terminal %</div>
+            </div>
+        </div>
+
+        <!-- Map Panel -->
+        <div class="panel map-panel">
+            <div class="panel-header">
+                <div class="panel-title">US Port Network</div>
+                <div class="panel-badge">LIVE</div>
+            </div>
+            <div class="panel-content" style="padding: 0;">
+                <div class="map-container">
+                    <svg class="us-map-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <filter id="glow-green" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <filter id="glow-amber" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="4" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="5" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+
+                        <!-- Continental US outline -->
+                        <path id="us-outline" d="M 120 130
+                            C 115 135, 110 150, 105 170
+                            C 100 190, 95 210, 92 230
+                            C 88 260, 85 280, 90 300
+                            C 95 320, 100 335, 110 345
+                            C 120 355, 140 360, 155 355
+                            L 175 345 L 200 355 L 230 365
+                            L 260 375 L 300 380 L 340 375
+                            L 380 385 L 410 380 L 440 395
+                            L 470 390 L 500 405 L 530 400
+                            L 560 410 L 600 405 L 640 395
+                            L 680 380 L 700 395 L 710 410
+                            L 730 430 L 720 440 L 710 435
+                            L 700 445 L 715 455 L 750 440
+                            L 780 420 L 800 380 L 810 340
+                            L 815 300 L 820 260 L 815 220
+                            L 800 190 L 770 165 L 730 150
+                            L 680 145 L 620 140 L 560 142
+                            L 500 138 L 440 135 L 380 130
+                            L 320 128 L 260 125 L 200 120
+                            L 160 122 L 120 130 Z"
+                            fill="rgba(0, 229, 255, 0.03)"
+                            stroke="rgba(0, 229, 255, 0.3)"
+                            stroke-width="1.5"/>
+
+                        <!-- Grid overlay on map -->
+                        <g stroke="rgba(0, 229, 255, 0.08)" stroke-width="0.5">
+                            <line x1="100" y1="150" x2="100" y2="450"/>
+                            <line x1="200" y1="120" x2="200" y2="450"/>
+                            <line x1="300" y1="120" x2="300" y2="450"/>
+                            <line x1="400" y1="120" x2="400" y2="450"/>
+                            <line x1="500" y1="120" x2="500" y2="450"/>
+                            <line x1="600" y1="120" x2="600" y2="450"/>
+                            <line x1="700" y1="120" x2="700" y2="450"/>
+                            <line x1="800" y1="120" x2="800" y2="450"/>
+                            <line x1="80" y1="200" x2="850" y2="200"/>
+                            <line x1="80" y1="300" x2="850" y2="300"/>
+                            <line x1="80" y1="400" x2="850" y2="400"/>
+                        </g>
+
+                        <!-- Port markers will be inserted here by JS -->
+                        <g id="port-markers-group"></g>
+                    </svg>
+
+                    <div class="map-legend">
+                        <div class="legend-item"><div class="legend-dot low"></div><span>Low Risk</span></div>
+                        <div class="legend-item"><div class="legend-dot medium"></div><span>Medium</span></div>
+                        <div class="legend-item"><div class="legend-dot high"></div><span>High Risk</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Panel -->
+        <div class="panel alerts-panel">
+            <div class="panel-header">
+                <div class="panel-title">Surge Alerts</div>
+                <div class="panel-badge" id="alert-count">3</div>
+            </div>
+            <div class="panel-content">
+                <div class="alert-list" id="alert-list"></div>
+            </div>
+        </div>
+
+        <!-- Dispatch Windows -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Optimal Dispatch Windows</div>
+                <div class="panel-badge">24H</div>
+            </div>
+            <div class="panel-content">
+                <div class="dispatch-list" id="dispatch-list"></div>
+            </div>
+        </div>
+
+        <!-- Terminal Utilization -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Terminal Utilization</div>
+            </div>
+            <div class="panel-content">
+                <div class="utilization-list" id="utilization-list"></div>
+            </div>
+        </div>
+
+        <!-- Feature Importance -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Model Drivers</div>
+                <div class="panel-badge">XGBoost</div>
+            </div>
+            <div class="panel-content">
+                <div id="feature-chart"></div>
+            </div>
+        </div>
+
+        <!-- Repositioning -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Truck Repositioning</div>
+            </div>
+            <div class="panel-content">
+                <div id="reposition-list"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Update timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('timestamp').textContent =
+                now.toLocaleTimeString('en-US', { hour12: false }) + ' UTC';
+        }
+        setInterval(updateTimestamp, 1000);
+        updateTimestamp();
+
+        // Port data with SVG coordinates (mapping lat/lon to SVG viewBox 900x500)
+        // Approximate: lon -125 to -65 -> x 80 to 840, lat 50 to 24 -> y 120 to 450
+        function lonToX(lon) { return ((lon + 125) / 60) * 760 + 80; }
+        function latToY(lat) { return ((50 - lat) / 26) * 330 + 120; }
+
+        const ports = [
+            { name: 'Seattle', lat: 47.6, lon: -122.3, risk: 12 },
+            { name: 'Tacoma', lat: 47.2, lon: -122.4, risk: 19 },
+            { name: 'Portland', lat: 45.5, lon: -122.7, risk: 15 },
+            { name: 'Oakland', lat: 37.8, lon: -122.3, risk: 15 },
+            { name: 'Los Angeles', lat: 33.7, lon: -118.2, risk: 58 },
+            { name: 'Long Beach', lat: 33.8, lon: -118.1, risk: 52 },
+            { name: 'San Diego', lat: 32.7, lon: -117.1, risk: 20 },
+            { name: 'Houston', lat: 29.7, lon: -95.0, risk: 72 },
+            { name: 'Corpus Christi', lat: 27.8, lon: -97.4, risk: 25 },
+            { name: 'New Orleans', lat: 30.0, lon: -90.0, risk: 45 },
+            { name: 'Mobile', lat: 30.7, lon: -88.0, risk: 41 },
+            { name: 'Tampa', lat: 27.9, lon: -82.5, risk: 28 },
+            { name: 'Miami', lat: 25.8, lon: -80.2, risk: 32 },
+            { name: 'Jacksonville', lat: 30.3, lon: -81.7, risk: 28 },
+            { name: 'Savannah', lat: 32.1, lon: -81.1, risk: 28 },
+            { name: 'Charleston', lat: 32.8, lon: -79.9, risk: 18 },
+            { name: 'Norfolk', lat: 36.8, lon: -76.3, risk: 22 },
+            { name: 'Baltimore', lat: 39.3, lon: -76.6, risk: 25 },
+            { name: 'Philadelphia', lat: 39.9, lon: -75.1, risk: 20 },
+            { name: 'New York', lat: 40.7, lon: -74.0, risk: 35 },
+            { name: 'Boston', lat: 42.4, lon: -71.0, risk: 18 },
+            { name: 'Beaumont', lat: 30.1, lon: -94.1, risk: 55 },
+            { name: 'Duluth', lat: 46.8, lon: -92.1, risk: 14 },
+        ];
+
+        // Render port markers in SVG
+        function renderPortMarkers() {
+            const group = document.getElementById('port-markers-group');
+            group.innerHTML = '';
+
+            ports.forEach((port, i) => {
+                const x = lonToX(port.lon);
+                const y = latToY(port.lat);
+                const riskClass = port.risk > 50 ? 'high' : port.risk > 30 ? 'medium' : 'low';
+                const glowFilter = riskClass === 'high' ? 'glow-red' : riskClass === 'medium' ? 'glow-amber' : 'glow-green';
+                const color = riskClass === 'high' ? '#ff3d3d' : riskClass === 'medium' ? '#ffaa00' : '#00ff88';
+
+                // Outer glow pulse
+                const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                glow.setAttribute('cx', x);
+                glow.setAttribute('cy', y);
+                glow.setAttribute('r', '12');
+                glow.setAttribute('fill', color);
+                glow.setAttribute('opacity', '0.3');
+                glow.classList.add('port-glow');
+                glow.style.animationDelay = `${i * 0.2}s`;
+
+                // Main dot
+                const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                dot.setAttribute('cx', x);
+                dot.setAttribute('cy', y);
+                dot.setAttribute('r', '5');
+                dot.setAttribute('fill', color);
+                dot.setAttribute('filter', `url(#${glowFilter})`);
+                dot.classList.add('port-marker-svg', riskClass);
+
+                // Label
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', y - 10);
+                label.setAttribute('text-anchor', 'middle');
+                label.classList.add('port-label');
+                label.textContent = port.name;
+
+                // Tooltip on hover
+                dot.addEventListener('mouseenter', () => {
+                    label.style.opacity = '1';
+                });
+                dot.addEventListener('mouseleave', () => {
+                    label.style.opacity = '0';
+                });
+                label.style.opacity = '0';
+                label.style.transition = 'opacity 0.2s';
+
+                group.appendChild(glow);
+                group.appendChild(dot);
+                group.appendChild(label);
+            });
+        }
+
+        // Render alerts
+        function renderAlerts() {
+            const container = document.getElementById('alert-list');
+            const alerts = ports.filter(p => p.risk > 40).sort((a, b) => b.risk - a.risk).slice(0, 5);
+
+            document.getElementById('alert-count').textContent = alerts.length;
+
+            container.innerHTML = alerts.map(a => `
+                <div class="alert-item ${a.risk > 50 ? '' : 'medium'}">
+                    <div class="alert-icon">${a.risk > 50 ? '🚨' : '⚠️'}</div>
+                    <div class="alert-content">
+                        <div class="alert-title">${a.name}</div>
+                        <div class="alert-detail">${a.risk > 50 ? 'HIGH' : 'MEDIUM'} risk • Surge expected</div>
+                    </div>
+                    <div class="alert-prob">${a.risk}%</div>
+                </div>
+            `).join('');
+        }
+
+        // Render dispatch windows
+        function renderDispatch() {
+            const container = document.getElementById('dispatch-list');
+            const data = [
+                { port: 'Houston', state: 'TX', hours: '10:00 - 15:00', trucks: 1200, risk: 'high' },
+                { port: 'Los Angeles', state: 'CA', hours: '10:00 - 15:00', trucks: 950, risk: 'medium' },
+                { port: 'Beaumont', state: 'TX', hours: '10:00 - 15:00', trucks: 420, risk: 'medium' },
+                { port: 'New Orleans', state: 'LA', hours: '10:00 - 15:00', trucks: 680, risk: 'medium' },
+                { port: 'New York', state: 'NY', hours: '06:00 - 22:00', trucks: 720, risk: 'low' },
+                { port: 'Savannah', state: 'GA', hours: '06:00 - 22:00', trucks: 560, risk: 'low' },
+            ];
+
+            container.innerHTML = data.map(d => `
+                <div class="dispatch-item">
+                    <div>
+                        <div class="dispatch-port-name">${d.port}</div>
+                        <div class="dispatch-port-state">${d.state}</div>
+                    </div>
+                    <div class="dispatch-time">${d.hours}</div>
+                    <div style="text-align: center;">
+                        <div class="dispatch-trucks-value">${d.trucks}</div>
+                        <div class="dispatch-trucks-label">trucks</div>
+                    </div>
+                    <div class="risk-badge ${d.risk}">${d.risk}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render utilization
+        function renderUtilization() {
+            const container = document.getElementById('utilization-list');
+            const data = [
+                { port: 'Houston', pct: 92, status: 'critical' },
+                { port: 'Los Angeles', pct: 78, status: 'high' },
+                { port: 'New Orleans', pct: 72, status: 'normal' },
+                { port: 'New York', pct: 68, status: 'normal' },
+                { port: 'Savannah', pct: 62, status: 'normal' },
+                { port: 'Norfolk', pct: 45, status: 'low' },
+                { port: 'Oakland', pct: 38, status: 'low' },
+            ];
+
+            container.innerHTML = data.map(d => `
+                <div>
+                    <div class="utilization-header">
+                        <span class="utilization-port">${d.port}</span>
+                        <span class="utilization-value" style="color: var(--${d.status === 'critical' ? 'red-alert' : d.status === 'high' ? 'amber' : 'cyan'})">${d.pct}%</span>
+                    </div>
+                    <div class="utilization-bar">
+                        <div class="utilization-fill ${d.status}" style="width: ${d.pct}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render features
+        function renderFeatures() {
+            const container = document.getElementById('feature-chart');
+            const data = [
+                { name: 'activity_rank', val: 68.2 },
+                { name: 'ma30', val: 20.4 },
+                { name: 'ma14', val: 2.9 },
+                { name: 'import_ma7', val: 0.65 },
+                { name: 'std30', val: 0.42 },
+                { name: 'zscore_7d', val: 0.36 },
+                { name: 'zscore_30d', val: 0.36 },
+                { name: 'momentum_3d', val: 0.26 },
+            ];
+
+            container.innerHTML = data.map(d => `
+                <div class="feature-item">
+                    <div class="feature-name">${d.name}</div>
+                    <div class="feature-bar-container">
+                        <div class="feature-bar" style="width: ${d.val}%"></div>
+                    </div>
+                    <div class="feature-value">${d.val}%</div>
+                </div>
+            `).join('');
+        }
+
+        // Render repositioning
+        function renderRepositioning() {
+            const container = document.getElementById('reposition-list');
+            const data = [
+                { from: 'Oakland', to: 'Houston', trucks: 50, dist: 2800, urgency: 'high' },
+                { from: 'Norfolk', to: 'New Orleans', trucks: 35, dist: 1400, urgency: 'medium' },
+                { from: 'Charleston', to: 'Beaumont', trucks: 25, dist: 1200, urgency: 'medium' },
+            ];
+
+            container.innerHTML = data.map(d => `
+                <div class="reposition-item ${d.urgency}">
+                    <div class="reposition-route">
+                        <span class="reposition-terminal">${d.from}</span>
+                        <span class="reposition-arrow">→</span>
+                        <span class="reposition-terminal">${d.to}</span>
+                    </div>
+                    <div class="reposition-details">
+                        <span class="reposition-trucks">${d.trucks} trucks</span>
+                        <span class="reposition-distance">${d.dist} km</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        renderPortMarkers();
+        renderAlerts();
+        renderDispatch();
+        renderUtilization();
+        renderFeatures();
+        renderRepositioning();
+    </script>
+</body>
+</html>

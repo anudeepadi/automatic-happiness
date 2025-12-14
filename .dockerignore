@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Data (mount as volumes instead)
+data/
+output/
+models/
+
+# Node
+node_modules/
+dashboard/node_modules/
+dashboard/.next/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+*.log
+
+# Docs
+*.md
+!README.md
+
+# Tests
+tests/
+*.test.*
