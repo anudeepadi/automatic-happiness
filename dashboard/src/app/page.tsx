@@ -90,14 +90,17 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const response = await fetch('http://localhost:8000/dashboard')
+        // API URL: defaults to localhost:8000 which works for both local dev and Docker
+        // (Docker exposes port 8000 to host, so browser can access it at localhost:8000)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const response = await fetch(`${apiUrl}/dashboard`)
         if (!response.ok) throw new Error('Failed to fetch dashboard data')
         const result = await response.json()
         setData(result)
         setError(null)
       } catch (err) {
         console.error('Error fetching dashboard:', err)
-        setError('Unable to connect to API. Make sure FastAPI is running on port 8000.')
+        setError('Unable to connect to API. Make sure the backend is running on port 8000.')
       } finally {
         setLoading(false)
       }
@@ -129,7 +132,7 @@ export default function Dashboard() {
             />
           </div>
           <h2 className="font-display text-2xl text-ocean-400 tracking-wider">INITIALIZING</h2>
-          <p className="text-slate-400 mt-2 font-mono text-sm">Loading port intelligence...</p>
+          <p className="text-slate-500 mt-2 font-mono text-sm">Loading port intelligence...</p>
         </motion.div>
       </div>
     )
@@ -149,7 +152,7 @@ export default function Dashboard() {
             </svg>
           </div>
           <h2 className="font-display text-2xl text-cargo-orange tracking-wider mb-3">CONNECTION LOST</h2>
-          <p className="text-slate-400 font-mono text-sm mb-6">{error}</p>
+          <p className="text-slate-500 font-mono text-sm mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-ocean-600/20 hover:bg-ocean-600/30 border border-ocean-500/30 rounded-lg font-mono text-ocean-400 transition-all"

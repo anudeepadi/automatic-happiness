@@ -52,7 +52,7 @@ export default function TerminalUtilization({ terminals }: TerminalUtilizationPr
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-display text-lg text-white tracking-wide">TERMINAL LOAD</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">TERMINAL LOAD</h2>
           <p className="text-xs font-mono text-slate-500">Capacity utilization</p>
         </div>
         <div className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export default function TerminalUtilization({ terminals }: TerminalUtilizationPr
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={`w-2 h-2 rounded-full ${colors.bg}`} />
-                  <span className="font-mono text-xs text-white truncate">
+                  <span className="font-mono text-xs text-slate-800 truncate">
                     {terminal.port}
                   </span>
                   <span className="text-[10px] font-mono text-slate-600">
@@ -90,7 +90,7 @@ export default function TerminalUtilization({ terminals }: TerminalUtilizationPr
                   </span>
                   <span className={`
                     text-[9px] font-mono px-1.5 py-0.5 rounded
-                    ${colors.text} bg-slate-800/50 border ${colors.border}
+                    ${colors.text} bg-slate-100 border ${colors.border}
                   `}>
                     {terminal.status}
                   </span>
@@ -98,7 +98,7 @@ export default function TerminalUtilization({ terminals }: TerminalUtilizationPr
               </div>
 
               {/* Progress bar */}
-              <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${colors.bg}`}
                   initial={{ width: 0 }}

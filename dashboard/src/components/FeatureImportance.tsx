@@ -27,8 +27,8 @@ export default function FeatureImportance({ features }: FeatureImportanceProps) 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; raw: number } }> }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-950/95 border border-ocean-500/20 rounded-lg p-2 backdrop-blur-xl">
-          <p className="text-xs font-mono text-white">{payload[0].payload.name}</p>
+        <div className="bg-white/95 border border-ocean-500/20 rounded-lg p-2 backdrop-blur-xl shadow-lg">
+          <p className="text-xs font-mono text-slate-800">{payload[0].payload.name}</p>
           <p className="text-xs font-mono text-ocean-400">
             Importance: {payload[0].payload.raw.toFixed(4)}
           </p>
@@ -43,7 +43,7 @@ export default function FeatureImportance({ features }: FeatureImportanceProps) 
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-display text-lg text-white tracking-wide">MODEL INSIGHTS</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">MODEL INSIGHTS</h2>
           <p className="text-xs font-mono text-slate-500">Top predictive features</p>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono text-ocean-400">

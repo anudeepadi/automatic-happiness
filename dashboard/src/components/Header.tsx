@@ -21,7 +21,7 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="relative border-b border-ocean-500/10 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
+    <header className="relative border-b border-ocean-500/20 bg-white/90 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
       {/* Scan line effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -47,8 +47,8 @@ export default function Header() {
               </motion.div>
             </div>
             <div>
-              <h1 className="font-display text-xl sm:text-2xl tracking-wider text-white">
-                PORT<span className="text-ocean-400">SURGE</span>
+              <h1 className="font-display text-xl sm:text-2xl tracking-wider text-slate-800">
+                PORT<span className="text-ocean-600">SURGE</span>
               </h1>
               <p className="text-[10px] sm:text-xs font-mono text-slate-500 tracking-widest uppercase">
                 Rail Dispatch Command Center
@@ -66,10 +66,10 @@ export default function Header() {
               <span className="text-xs font-mono text-signal-green">LIVE</span>
             </div>
 
-            <div className="h-8 w-px bg-slate-800" />
+            <div className="h-8 w-px bg-slate-200" />
 
             <div className="text-right">
-              <div className="font-mono text-lg text-white tracking-wider">{time}</div>
+              <div className="font-mono text-lg text-slate-800 tracking-wider">{time}</div>
               <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{date}</div>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function Header() {
               <div className="w-2 h-2 rounded-full bg-signal-green" />
               <div className="absolute inset-0 w-2 h-2 rounded-full bg-signal-green animate-ping opacity-75" />
             </div>
-            <span className="font-mono text-sm text-white">{time}</span>
+            <span className="font-mono text-sm text-slate-800">{time}</span>
           </div>
         </div>
       </div>

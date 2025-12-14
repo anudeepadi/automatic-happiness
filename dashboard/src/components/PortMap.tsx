@@ -69,7 +69,7 @@ export default function PortMap({ ports, predictions, selectedPort, onPortSelect
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-display text-lg text-white tracking-wide">PORT NETWORK</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">PORT NETWORK</h2>
           <p className="text-xs font-mono text-slate-500">Real-time risk visualization</p>
         </div>
         <div className="flex items-center gap-4 text-xs font-mono">
@@ -89,7 +89,7 @@ export default function PortMap({ ports, predictions, selectedPort, onPortSelect
       </div>
 
       {/* Map Container */}
-      <div className="relative h-[calc(100%-60px)] bg-slate-900/50 rounded-xl overflow-hidden border border-ocean-500/10">
+      <div className="relative h-[calc(100%-60px)] bg-slate-50 rounded-xl overflow-hidden border border-ocean-500/15">
         {/* Radar sweep effect */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
@@ -173,7 +173,7 @@ export default function PortMap({ ports, predictions, selectedPort, onPortSelect
                       width={100}
                       height={22}
                       rx={4}
-                      fill="rgba(10,12,16,0.95)"
+                      fill="rgba(255,255,255,0.95)"
                       stroke={getRiskColor(port.risk)}
                       strokeWidth="1"
                     />
@@ -181,7 +181,7 @@ export default function PortMap({ ports, predictions, selectedPort, onPortSelect
                       x={port.x}
                       y={port.y - 20}
                       textAnchor="middle"
-                      fill="white"
+                      fill="#1e293b"
                       fontSize="10"
                       fontFamily="JetBrains Mono"
                     >
@@ -201,13 +201,13 @@ export default function PortMap({ ports, predictions, selectedPort, onPortSelect
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="absolute top-4 right-4 w-64 bg-slate-950/95 border border-ocean-500/20 rounded-xl p-4 backdrop-blur-xl"
+              className="absolute top-4 right-4 w-64 bg-white/95 border border-ocean-500/20 rounded-xl p-4 backdrop-blur-xl shadow-lg"
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-display text-sm text-white">{selectedPortData.portname}</h3>
+                <h3 className="font-display text-sm text-slate-800">{selectedPortData.portname}</h3>
                 <button
                   onClick={() => onPortSelect(null)}
-                  className="text-slate-500 hover:text-white transition-colors"
+                  className="text-slate-400 hover:text-slate-800 transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -234,7 +234,7 @@ export default function PortMap({ ports, predictions, selectedPort, onPortSelect
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Drayage</span>
-                  <span className="text-slate-300">{selectedPortData.distance_km.toFixed(0)} km</span>
+                  <span className="text-slate-700">{selectedPortData.distance_km.toFixed(0)} km</span>
                 </div>
               </div>
             </motion.div>

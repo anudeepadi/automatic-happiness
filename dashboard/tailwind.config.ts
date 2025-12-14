@@ -9,12 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Maritime industrial palette
+        // Maritime light palette
         slate: {
-          950: '#0a0c10',
-          900: '#0f1218',
-          850: '#151922',
-          800: '#1a1f2e',
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          800: '#1e293b',
+          900: '#0f172a',
         },
         ocean: {
           50: '#e6f9ff',
@@ -57,8 +59,8 @@ const config: Config = {
           '100%': { transform: 'translateY(100%)' },
         },
         glow: {
-          '0%': { boxShadow: '0 0 5px rgba(0, 184, 230, 0.2), 0 0 10px rgba(0, 184, 230, 0.1)' },
-          '100%': { boxShadow: '0 0 20px rgba(0, 184, 230, 0.4), 0 0 40px rgba(0, 184, 230, 0.2)' },
+          '0%': { boxShadow: '0 0 5px rgba(0, 148, 184, 0.15), 0 0 10px rgba(0, 148, 184, 0.08)' },
+          '100%': { boxShadow: '0 0 20px rgba(0, 148, 184, 0.25), 0 0 40px rgba(0, 148, 184, 0.12)' },
         },
         slideUp: {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
@@ -70,7 +72,7 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        'grid-pattern': 'linear-gradient(rgba(0,184,230,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,184,230,0.03) 1px, transparent 1px)',
+        'grid-pattern': 'linear-gradient(rgba(0,148,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,148,184,0.06) 1px, transparent 1px)',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },

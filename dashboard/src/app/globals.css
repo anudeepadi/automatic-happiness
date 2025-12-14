@@ -9,8 +9,8 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'DM Sans', sans-serif;
 
-  --ocean-glow: rgba(0, 184, 230, 0.15);
-  --cargo-glow: rgba(255, 107, 53, 0.15);
+  --ocean-glow: rgba(0, 148, 184, 0.12);
+  --cargo-glow: rgba(234, 88, 12, 0.12);
 }
 
 html {
@@ -19,8 +19,8 @@ html {
 
 body {
   font-family: var(--font-body);
-  background: #0a0c10;
-  color: #e2e8f0;
+  background: #f8fafc;
+  color: #1e293b;
   overflow-x: hidden;
 }
 
@@ -31,7 +31,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #151922;
+  background: #e2e8f0;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -40,14 +40,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00b8e6;
+  background: #0077a0;
 }
 
 /* Grid pattern overlay */
 .grid-overlay {
   background-image:
-    linear-gradient(rgba(0, 184, 230, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 184, 230, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 148, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 148, 184, 0.06) 1px, transparent 1px);
   background-size: 50px 50px;
 }
 
@@ -64,16 +64,16 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 184, 230, 0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 148, 184, 0.5), transparent);
   animation: scan 4s linear infinite;
 }
 
 /* Glowing border */
 .glow-border {
   box-shadow:
-    0 0 0 1px rgba(0, 184, 230, 0.2),
-    0 0 20px rgba(0, 184, 230, 0.1),
-    inset 0 0 60px rgba(0, 184, 230, 0.03);
+    0 0 0 1px rgba(0, 148, 184, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    inset 0 0 60px rgba(0, 148, 184, 0.02);
 }
 
 /* Risk indicators */
@@ -107,16 +107,17 @@ body {
 /* Data card hover effect */
 .data-card {
   transition: all 0.3s ease;
-  background: linear-gradient(180deg, rgba(26, 31, 46, 0.8), rgba(15, 18, 24, 0.9));
-  border: 1px solid rgba(0, 184, 230, 0.1);
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border: 1px solid rgba(0, 148, 184, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .data-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(0, 184, 230, 0.3);
+  border-color: rgba(0, 148, 184, 0.3);
   box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.3),
-    0 0 30px rgba(0, 184, 230, 0.1);
+    0 10px 40px rgba(0, 0, 0, 0.08),
+    0 0 30px rgba(0, 148, 184, 0.08);
 }
 
 /* Staggered animation classes */
@@ -137,7 +138,7 @@ body {
   z-index: 100;
 }
 
-/* Noise texture overlay */
+/* Noise texture overlay - subtle for light theme */
 .noise-overlay {
   position: fixed;
   top: 0;
@@ -145,7 +146,7 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.02;
+  opacity: 0.015;
   z-index: 9999;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
@@ -153,7 +154,7 @@ body {
 /* Chart custom styling */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  stroke: rgba(0, 184, 230, 0.1);
+  stroke: rgba(0, 148, 184, 0.12);
 }
 
 .recharts-tooltip-wrapper {
@@ -180,7 +181,7 @@ body {
 .utilization-bar {
   position: relative;
   height: 8px;
-  background: rgba(0, 184, 230, 0.1);
+  background: rgba(0, 148, 184, 0.12);
   border-radius: 4px;
   overflow: hidden;
 }

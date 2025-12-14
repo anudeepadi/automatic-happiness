@@ -45,7 +45,7 @@ export default function RepositioningPanel({ repositioning }: RepositioningPanel
     return (
       <div className="data-card rounded-2xl p-4">
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="font-display text-lg text-white tracking-wide">TRUCK REPOSITIONING</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">TRUCK REPOSITIONING</h2>
           <span className="text-xs font-mono text-signal-green px-2 py-1 bg-signal-green/10 rounded border border-signal-green/20">
             NO ACTION NEEDED
           </span>
@@ -62,7 +62,7 @@ export default function RepositioningPanel({ repositioning }: RepositioningPanel
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <h2 className="font-display text-lg text-white tracking-wide">TRUCK REPOSITIONING</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">TRUCK REPOSITIONING</h2>
           <span className="text-xs font-mono text-cargo-orange px-2 py-1 bg-cargo-orange/10 rounded border border-cargo-orange/20">
             {repositioning.length} MOVES
           </span>
@@ -103,7 +103,7 @@ export default function RepositioningPanel({ repositioning }: RepositioningPanel
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] font-mono text-slate-500 mb-0.5">FROM</div>
-                  <div className="font-mono text-sm text-white truncate">
+                  <div className="font-mono text-sm text-slate-800 truncate">
                     {rec.from_terminal}
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export default function RepositioningPanel({ repositioning }: RepositioningPanel
 
                 <div className="flex-1 min-w-0 text-right">
                   <div className="text-[10px] font-mono text-slate-500 mb-0.5">TO</div>
-                  <div className="font-mono text-sm text-white truncate">
+                  <div className="font-mono text-sm text-slate-800 truncate">
                     {rec.to_terminal}
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export default function RepositioningPanel({ repositioning }: RepositioningPanel
               </div>
 
               {/* Reason */}
-              <div className="mt-3 pt-3 border-t border-slate-700/50">
+              <div className="mt-3 pt-3 border-t border-slate-200">
                 <p className="text-[10px] font-mono text-slate-400 line-clamp-2">
                   {rec.reason}
                 </p>

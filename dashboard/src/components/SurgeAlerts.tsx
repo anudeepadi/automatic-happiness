@@ -51,7 +51,7 @@ export default function SurgeAlerts({ predictions, onPortSelect }: SurgeAlertsPr
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-display text-lg text-white tracking-wide">SURGE ALERTS</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">SURGE ALERTS</h2>
           <p className="text-xs font-mono text-slate-500">24h forecast</p>
         </div>
         <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export default function SurgeAlerts({ predictions, onPortSelect }: SurgeAlertsPr
                         </svg>
                       </motion.div>
                     )}
-                    <h3 className="font-mono text-sm text-white font-medium truncate">
+                    <h3 className="font-mono text-sm text-slate-800 font-medium truncate">
                       {pred.port}
                     </h3>
                   </div>
@@ -118,7 +118,7 @@ export default function SurgeAlerts({ predictions, onPortSelect }: SurgeAlertsPr
               </div>
 
               {/* Progress bar */}
-              <div className="mt-2 h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div className="mt-2 h-1 bg-slate-200 rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${
                     pred.risk_level === 'HIGH' ? 'bg-signal-red' :

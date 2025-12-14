@@ -33,7 +33,7 @@ export default function DispatchWindows({ windows }: DispatchWindowsProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-display text-lg text-white tracking-wide">DISPATCH WINDOWS</h2>
+          <h2 className="font-display text-lg text-slate-800 tracking-wide">DISPATCH WINDOWS</h2>
           <p className="text-xs font-mono text-slate-500">Optimal scheduling</p>
         </div>
         <div className="flex items-center gap-1 text-xs font-mono text-ocean-400">
@@ -59,7 +59,7 @@ export default function DispatchWindows({ windows }: DispatchWindowsProps) {
           >
             <div className="flex items-start justify-between mb-2">
               <div>
-                <h3 className="font-mono text-sm text-white font-medium">
+                <h3 className="font-mono text-sm text-slate-800 font-medium">
                   {window.port}
                 </h3>
                 <span className="text-[10px] font-mono text-slate-500">{window.state}</span>
