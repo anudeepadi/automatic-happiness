@@ -37,7 +37,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # GPU Training (optional - run with: docker-compose run train)
+  # GPU Training - Enhanced Model
+  # Run: docker-compose --profile gpu run train
   train:
     build:
       context: .
@@ -47,16 +48,61 @@ services:
       - ./data:/app/data:ro
       - ./output:/app/output
       - ./models:/app/models
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=all
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
+              capabilities: [gpu, compute, utility]
+    profiles:
+      - gpu
+    command: ["python", "train_enhanced_model.py", "--gpu"]
+
+  # GPU Benchmark - CPU vs GPU Comparison
+  # Run: docker-compose --profile gpu run benchmark
+  benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: portsurge-benchmark
+    volumes:
+      - ./data:/app/data:ro
+      - ./output:/app/output
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility]
+    profiles:
+      - gpu
+    command: ["python", "gpu_training_showcase.py", "--benchmark"]
+
+  # GPU Verification - Check GPU Setup
+  # Run: docker-compose --profile gpu run verify-gpu
+  verify-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: portsurge-verify
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
               capabilities: [gpu]
     profiles:
       - gpu
-    command: ["python", "train_champion_model.py", "--gpu"]
+    command: ["/bin/bash", "-c", "nvidia-smi && python -c 'import torch; print(f\"PyTorch CUDA: {torch.cuda.is_available()}\"); import cudf; print(f\"RAPIDS: {cudf.__version__}\")'"]
 
 networks:
   default:

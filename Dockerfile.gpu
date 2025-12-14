@@ -1,26 +1,123 @@
-# GPU-enabled Training Image for DGX
-# Port-to-Rail Surge Forecaster
+# ============================================================================
+# GPU-Accelerated Training Image for NVIDIA DGX
+# Port-to-Rail Surge Forecaster - DGX Spark Frontier Hackathon 2025
+# ============================================================================
+#
+# This image demonstrates full NVIDIA GPU utilization:
+# - RAPIDS cuDF/cuML for GPU-accelerated data processing (100x faster)
+# - XGBoost gpu_hist for GPU-accelerated gradient boosting
+# - PyTorch CUDA for deep learning (LSTM time series)
+# - Multi-GPU scaling with Dask-CUDA
+#
+# Build:
+#   docker build -f Dockerfile.gpu -t portsurge-gpu .
+#
+# Run on DGX:
+#   docker run --gpus all -v $(pwd)/data:/app/data portsurge-gpu
+#
+# Run benchmark:
+#   docker run --gpus all -v $(pwd)/data:/app/data portsurge-gpu python gpu_training_showcase.py --benchmark
+# ============================================================================
 
-FROM nvcr.io/nvidia/rapidsai/rapidsai:24.06-cuda12.2-runtime-ubuntu22.04-py3.11
+FROM nvcr.io/nvidia/rapidsai/base:24.06-cuda12.2-py3.11
+
+# Metadata
+LABEL maintainer="DGX Spark Frontier Hackathon Team"
+LABEL description="GPU-accelerated Port-to-Rail Surge Forecaster"
+LABEL nvidia.rapids="24.06"
+LABEL nvidia.cuda="12.2"
 
 WORKDIR /app
 
-# Install additional dependencies
+# ============================================================================
+# Install RAPIDS ML Components
+# ============================================================================
+RUN mamba install -y -c rapidsai -c conda-forge -c nvidia \
+    cuml=24.06 \
+    dask-cudf=24.06 \
+    && mamba clean -afy
+
+# ============================================================================
+# Install PyTorch with CUDA Support
+# ============================================================================
 RUN pip install --no-cache-dir \
+    torch>=2.1.0 \
+    --extra-index-url https://download.pytorch.org/whl/cu121
+
+# ============================================================================
+# Install ML & API Dependencies
+# ============================================================================
+RUN pip install --no-cache-dir \
+    # XGBoost with GPU support
     xgboost>=2.0.0 \
+    # Scikit-learn & imbalanced-learn
     scikit-learn>=1.3.0 \
+    imbalanced-learn>=0.11.0 \
+    # API
     fastapi>=0.104.0 \
     uvicorn[standard]>=0.24.0 \
     pydantic>=2.0.0 \
-    pyarrow>=12.0.0
+    # Data
+    pyarrow>=12.0.0 \
+    # GPU Monitoring
+    pynvml>=11.5.0 \
+    nvitop>=1.3.0 \
+    # Hyperparameter tuning
+    optuna>=3.4.0 \
+    # Advanced ML
+    lightgbm>=4.0.0 \
+    catboost>=1.2.0
 
-# Copy application code
+# ============================================================================
+# Copy Application Code
+# ============================================================================
 COPY src/ ./src/
 COPY api/ ./api/
 COPY train_champion_model.py .
+COPY train_enhanced_model.py .
+COPY gpu_training_showcase.py .
 
-# Create directories
+# ============================================================================
+# Create Directories
+# ============================================================================
 RUN mkdir -p data output models
 
-# Default command
-CMD ["python", "train_champion_model.py", "--gpu"]
+# ============================================================================
+# Environment Variables
+# ============================================================================
+ENV PYTHONUNBUFFERED=1
+ENV CUDA_VISIBLE_DEVICES=all
+ENV RAPIDS_NO_INITIALIZE=1
+
+# ============================================================================
+# GPU Verification Script
+# ============================================================================
+RUN echo '#!/bin/bash\n\
+echo "============================================"\n\
+echo "NVIDIA GPU VERIFICATION"\n\
+echo "============================================"\n\
+nvidia-smi\n\
+echo ""\n\
+echo "CUDA Version: $(nvcc --version | grep release)"\n\
+echo ""\n\
+python -c "import torch; print(f\"PyTorch CUDA: {torch.cuda.is_available()}, GPUs: {torch.cuda.device_count()}\")" \n\
+python -c "import cudf; print(f\"RAPIDS cuDF: {cudf.__version__}\")" \n\
+python -c "import cuml; print(f\"RAPIDS cuML: {cuml.__version__}\")" \n\
+python -c "import xgboost; print(f\"XGBoost: {xgboost.__version__}\")" \n\
+echo "============================================"' > /app/verify_gpu.sh && chmod +x /app/verify_gpu.sh
+
+# ============================================================================
+# Health Check
+# ============================================================================
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import torch; assert torch.cuda.is_available()" || exit 1
+
+# ============================================================================
+# Expose API Port
+# ============================================================================
+EXPOSE 8000
+
+# ============================================================================
+# Default Command - Run GPU Training with Benchmark
+# ============================================================================
+CMD ["python", "gpu_training_showcase.py", "--benchmark"]
